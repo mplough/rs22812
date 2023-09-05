@@ -1,3 +1,4 @@
+#!/usr/bin/env python2
 '''
 Create a simple GUI to display and save readings for the Radio Shack 
 22-812 digital multimeter.

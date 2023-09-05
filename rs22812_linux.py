@@ -1,3 +1,4 @@
+#!/usr/bin/env python2
 '''
 A python interface for the Radio Shack 22-812 digital multimeter.  You will
 also need to download and install the PySerial module (see
