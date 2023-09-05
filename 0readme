@@ -9,7 +9,7 @@ this file by cloning the Mercurial repository at the above URL.
 ----------------------------------------------------------------------
 Files:
 
-README
+0readme
     This file
 meter.py
     A small GUI using wxPython that displays meter readings.
