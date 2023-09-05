@@ -1,3 +1,6 @@
+
+# rs22812
+
 *What it is*:  This is a python script that will talk over a serial
 port to a Radio Shack RS22812 digital multimeter.  
 
