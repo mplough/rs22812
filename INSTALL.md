@@ -5,8 +5,8 @@ This project has been exported from the archives at <code.google.com/p/rs22812>.
 ## usage
 
 * Dependencies
-  - `python2-pyserial`
-  - `python2-wx`
+  - `python2-pyserial` for `rs22812.py` and `rs22812_linux.py`
+  - `python2-wxpython3` (???) for `meter.py`
 
 ### Linux
 
