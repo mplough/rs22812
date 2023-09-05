@@ -1,6 +1,6 @@
 # rs22812
 
-This project has been exported from the archives at <code.google.com/p/rs22812>. I am not the author of this software, but just a end-user whom finds this software invaluable for his own works.
+This project has been exported from the archives at <https://code.google.com/p/rs22812>. I am not the author of this software, but just a end-user whom finds this software invaluable for his own works.
 
 ## usage
 
