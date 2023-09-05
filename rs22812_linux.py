@@ -93,9 +93,9 @@ The meter has a 9 pin female D connector for the serial port connection.
 ----------------------------------------------------------------------
 Copyright (C) 2009, 2014 Don Peterson
 Contact:  gmail.com@someonesdad1
-  
+
                   The Wide Open License (WOL)
-  
+
 Permission to use, copy, modify, distribute and sell this software and
 its documentation for any purpose is hereby granted without fee,
 provided that the above copyright notice and this license appear in
@@ -142,10 +142,10 @@ class RS22812(object):
         while not good_packet:
             self.sp.flushInput()
             sleep(sleep_time)
-            self.sp.setDTR(level=True)
+            self.sp.dsrdtr = True
             packet = self.sp.read(9)
             if len(packet) != 9:
-                self.sp.setDTR(level=False)
+                self.sp.dsrdtr = False
                 sleep(sleep_time)
                 continue
             # I have no idea why the article adds this number in for the
@@ -153,11 +153,11 @@ class RS22812(object):
             constant = 57
             checksum = (sum([ord(c) for c in packet[:-1]]) + constant) & 255
             if checksum != ord(packet[8]):
-                self.sp.setDTR(level=False)
+                self.sp.dsrdtr = False
                 sleep(sleep_time)
                 continue
             good_packet = True
-            self.sp.setDTR(level=False)
+            self.sp.dsrdtr = False
             sleep(sleep_time)
             self.sp.flushInput()
         return packet
@@ -165,8 +165,8 @@ class RS22812(object):
     def interpret_digit(self, byte):
         '''This routine interprets the coded seven segment display digit.
         '''
-        code = { 215 : "0", 80 : "1", 181 : "2", 241 : "3", 114 : "4", 
-            227 : "5", 231 : "6", 81 : "7", 247 : "8", 243 : "9", 39 : "F", 
+        code = { 215 : "0", 80 : "1", 181 : "2", 241 : "3", 114 : "4",
+            227 : "5", 231 : "6", 81 : "7", 247 : "8", 243 : "9", 39 : "F",
             55 : "P", 167 : "E", 135 : "C", 134 : "L", 118 : "H", 6 : "I",
             102 : "h", 36 : "r", 166 : "t", 100 : "n", 32 : "-", 0 : " "}
         if byte in code:
@@ -175,7 +175,7 @@ class RS22812(object):
             return "?"
 
     def GetModifiers(self, bytes):
-        '''Various modes show additional annunciators, such as "MAX", 
+        '''Various modes show additional annunciators, such as "MAX",
         "MIN", etc.  Return those set as a tuple of strings.  We ignore
         the RS-232 annunciator unless you really want it.
         '''
@@ -219,7 +219,7 @@ class RS22812(object):
         return ""
 
     def InterpretReading(self, string):
-        '''We return a tuple of strings:  
+        '''We return a tuple of strings:
             (
                 Numerical reading with units
                 Mode
@@ -230,7 +230,7 @@ class RS22812(object):
             return None
         bytes = [ord(i) for i in string]
         # Byte 0:  mode
-        modes = ("DC V", "AC V", "DC uA", "DC mA", "DC A", "AC uA", 
+        modes = ("DC V", "AC V", "DC uA", "DC mA", "DC A", "AC uA",
             "AC mA", "AC A", "ohm", "CAP", "Hz", "NET Hz", "AMP Hz",
             "Duty", "Net Duty", "Amp Duty", "Width", "Net Width", "Amp"
             "Width", "Diode", "Cont", "hFE", "Logic", "dBm", "EF", "Temp")
@@ -258,7 +258,7 @@ class RS22812(object):
         units = self.GetUnits(bytes)
         # Construct number
         if dp: digits.insert(dp, ".")
-        number = (''.join(digits)).strip() 
+        number = (''.join(digits)).strip()
         # Strip leading zeros
         while number and number[0] == "0":
             number = number[1:]
@@ -274,15 +274,15 @@ class RS22812(object):
     def DumpPacket(self, packet):
         s = ""
         for i in xrange(len(packet)):
-            s += "%3d " % ord(packet[i]) 
+            s += "%3d " % ord(packet[i])
         return s
 
     def GetReading(self):
-        # Return a string representing a reading.  If we could not get a 
+        # Return a string representing a reading.  If we could not get a
         # reading, return None.
         packet = self.get_packet()
         if 0:  # Turn on to see individual bytes
-            print self.DumpPacket(packet)
+            print(self.DumpPacket(packet))
         return self.InterpretReading(packet)
 
 if __name__ == "__main__":
@@ -322,13 +322,13 @@ if __name__ == "__main__":
             port = 'COM1'
         else:
             port = '/dev/ttyS0'
-        print "rs22812 main:  no port option specified:  port set to", port
-        
+        print("rs22812 main:  no port option specified:  port set to", port)
+
     rs = RS22812(port)
 
     count = 0
     while True:
         count += 1
         r = rs.GetReading()
-        print TimeNow() + " [%d]" % count, r
+        print(TimeNow() + " [%d]" % count, r)
         sleep(interval)
