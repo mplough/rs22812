@@ -13,7 +13,7 @@ This project has been exported from the archives at <https://code.google.com/p/r
 
 ```shell
 cd "$HOME/Projects"
-git clone "https://github.com/i8degrees/rs22812.git" rs22812
+git clone "https://github.com/syn-net/rs22812.git" rs22812
 cd "rs22812"
 python2 rs22812_linux.py --port /dev/ttyUSB0
 ```
