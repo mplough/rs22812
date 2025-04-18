@@ -1,17 +1,14 @@
 # rs22812
 
-This is a Python script that will talk over a serial
+This is a [Python](https://www.python.org/) script that will talk over a serial
 port to a Radio Shack RS22812 digital multimeter.
+
+It now works with Python 3.13.
 
 If you want to monitor a measured electrical parameter (voltage,
 current, resistance, etc.) over a period of time, this Python program
 can talk to a Radio Shack 22-812 digital multimeter over the serial
-port and print out its readings.
-
-Besides needing the multimeter and a serial cable to connect to the
-meter, you'll need to download the `PySerial` module:
-http://pyserial.sourceforge.net.  If you don't have Python, you can
-get it at http://www.python.org/.  My last few PCs didn't come with
+port and print out its readings.  My last few PCs didn't come with
 serial ports; if you're in the same boat, you can purchase a
 USB-to-serial adapter for $10-$15 that will do the job.
 
@@ -28,14 +25,22 @@ the reading shown when the REL button is pressed from subsequent
 readings.  Depending on the measurements, measurement accuracy is in
 the 0.5% to 1% range.
 
-The Python code provided has an RS22812 object that you create by
-specifying the COM port that the meter is connected to (e.g., a number
-for Windows or a device for Linux).  Then you call the `GetReading()`
-method of this object.  You'll be returned a tuple of three things:
-the measured value, the meter's mode, and any annunciator flags that
-are on.  Or, you can run the provided code as a stand-alone script and
-it will print the timestamped meter readings to stdout.  Here's an
-example:
+## Setup
+
+1. Clone this repository.
+1. [Install uv](https://docs.astral.sh/uv/getting-started/installation/).
+
+## Use
+
+### Script
+
+To run the code as a standalone script:
+
+```bash
+uv run rs22812_linux.py --port [e.g. /dev/tty.usbserial-XXXXXXXX]
+```
+
+Timestamped meter readings will be printed to stdout.  For example:
 
 ```
 16Aug2009-16:42:21 [1] ('129.7 mV', 'DC V', ('Auto',))
@@ -51,9 +56,6 @@ The meter first started reading the DC voltage of a power supply, then
 I switched the meter to measure AC voltage.  The '~' appended to the
 SI unit designates an AC measurement.
 
-The RS22812 object's code is pretty simple, so you can easily
-customize the output to your tastes.
-
 As seen in the above example, the minimum time between readings is
 about 1.5 seconds.  The manual states the battery life should be
 around 100 hours.  I would imagine the battery life would be less when
@@ -62,8 +64,17 @@ able to get 100,000 or more readings on one battery.  If you need
 more, it would not be difficult to power the meter from a power supply
 such as a 9 volt wall wart (or use a lithium battery).
 
-The zip file for the release also includes a [http://www.wxpython.org/
-wxPython] program that provides a simple GUI.
+### More details
+
+The Python code provided has an RS22812 object that you create by
+specifying the serial port that the meter is connected to (e.g., a number
+for Windows or a device for Linux).  Then you call the `GetReading()`
+method of this object.  You'll be returned a tuple of three things:
+the measured value, the meter's mode, and any annunciator flags that
+are on.
+
+The RS22812 object's code is pretty simple, so you can easily
+customize the output to your tastes.
 
 ## (Old) updates
 
