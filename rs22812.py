@@ -274,7 +274,7 @@ class RS22812(object):
 
     def DumpPacket(self, packet):
         s = ""
-        for i in xrange(len(packet)):
+        for i in range(len(packet)):
             s += "%3d " % ord(packet[i])
         return s
 
@@ -283,7 +283,7 @@ class RS22812(object):
         # reading, return None.
         packet = self.get_packet()
         if 0:  # Turn on to see individual bytes
-            print self.DumpPacket(packet)
+            print(self.DumpPacket(packet))
         return self.InterpretReading(packet)
 
 if __name__ == "__main__":
@@ -303,5 +303,5 @@ if __name__ == "__main__":
     while True:
         count += 1
         r = rs.GetReading()
-        print TimeNow() + " [%d]" % count, r
+        print(TimeNow() + " [%d]" % count, r)
         sleep(interval)
