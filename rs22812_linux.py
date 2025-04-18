@@ -1,5 +1,5 @@
-#!/usr/bin/env python2
-'''
+#!/usr/bin/env python3
+"""
 A python interface for the Radio Shack 22-812 digital multimeter.  You will
 also need to download and install the PySerial module (see
 http://pyserial.sourceforge.net/).  This Radio Shack multimeter has a
@@ -103,18 +103,20 @@ provided that the above copyright notice and this license appear in
 all copies.  THIS SOFTWARE IS PROVIDED "AS IS" WITHOUT EXPRESS OR
 IMPLIED WARRANTY OF ANY KIND. See
 http://www.dspguru.com/wide-open-license for more information.
-'''
+"""
 
 import serial
 from time import sleep
 
 ignore_RS232_modifier = True
 
-class RS22812(object):
-    '''Provides an interface object to the Radio Shack 22-812 digital
+
+class RS22812:
+    """Provides an interface object to the Radio Shack 22-812 digital
     multimeter.  You must provide the constructor with the port number
     or device.
-    '''
+    """
+
     def __init__(self, port):
         self.port = port
         baudrate = 4800
@@ -125,7 +127,7 @@ class RS22812(object):
             self.sp.close()
 
     def get_packet(self):
-        '''This routine follows the logic of the algorithm given on page 2
+        """This routine follows the logic of the algorithm given on page 2
         of the article
         http://www.kronosrobotics.com/Projects/CYW_RSMeter.pdf.  The
         procedure is:
@@ -137,7 +139,7 @@ class RS22812(object):
             Wait 100 ms
             Purge the port
         However, we continue to loop until we do get a good packet.
-        '''
+        """
         sleep_time = 0.3  # seconds
         good_packet = False
         while not good_packet:
@@ -164,77 +166,144 @@ class RS22812(object):
         return packet
 
     def interpret_digit(self, byte):
-        '''This routine interprets the coded seven segment display digit.
-        '''
-        code = { 215 : "0", 80 : "1", 181 : "2", 241 : "3", 114 : "4",
-            227 : "5", 231 : "6", 81 : "7", 247 : "8", 243 : "9", 39 : "F",
-            55 : "P", 167 : "E", 135 : "C", 134 : "L", 118 : "H", 6 : "I",
-            102 : "h", 36 : "r", 166 : "t", 100 : "n", 32 : "-", 0 : " "}
+        """This routine interprets the coded seven segment display digit."""
+        code = {
+            215: "0",
+            80: "1",
+            181: "2",
+            241: "3",
+            114: "4",
+            227: "5",
+            231: "6",
+            81: "7",
+            247: "8",
+            243: "9",
+            39: "F",
+            55: "P",
+            167: "E",
+            135: "C",
+            134: "L",
+            118: "H",
+            6: "I",
+            102: "h",
+            36: "r",
+            166: "t",
+            100: "n",
+            32: "-",
+            0: " ",
+        }
         if byte in code:
             return code[byte]
         else:
             return "?"
 
     def GetModifiers(self, bytes):
-        '''Various modes show additional annunciators, such as "MAX",
+        """Various modes show additional annunciators, such as "MAX",
         "MIN", etc.  Return those set as a tuple of strings.  We ignore
         the RS-232 annunciator unless you really want it.
-        '''
+        """
         s = []
-        if bytes[2] & (1 << 1):  s += ["REL"]
-        if bytes[2] & (1 << 0):  s += ["MIN"]
-        if bytes[6] & (1 << 3):  s += ["MAX"]
-        if bytes[7] & (1 << 7):  s += ["Beep"]
-        if bytes[7] & (1 << 6):  s += ["Diode"]
-        if bytes[7] & (1 << 5):  s += ["Bat"]
-        if bytes[7] & (1 << 4):  s += ["Hold"]
+        if bytes[2] & (1 << 1):
+            s += ["REL"]
+        if bytes[2] & (1 << 0):
+            s += ["MIN"]
+        if bytes[6] & (1 << 3):
+            s += ["MAX"]
+        if bytes[7] & (1 << 7):
+            s += ["Beep"]
+        if bytes[7] & (1 << 6):
+            s += ["Diode"]
+        if bytes[7] & (1 << 5):
+            s += ["Bat"]
+        if bytes[7] & (1 << 4):
+            s += ["Hold"]
         if not ignore_RS232_modifier:
-            if bytes[7] & (1 << 1):  s += ["RS232"]
-        if bytes[7] & (1 << 0):  s += ["Auto"]
+            if bytes[7] & (1 << 1):
+                s += ["RS232"]
+        if bytes[7] & (1 << 0):
+            s += ["Auto"]
         return tuple(s)
 
     def GetUnits(self, bytes):
-        '''Return a string representing the units of the measurement.
-        '''
+        """Return a string representing the units of the measurement."""
         prefix = ""
-        if   bytes[1] & (1 << 5):  prefix = "k"
-        elif bytes[1] & (1 << 4):  prefix = "M"
-        elif bytes[1] & (1 << 0):  prefix = "m"
-        elif bytes[2] & (1 << 7):  prefix = "u"
-        elif bytes[2] & (1 << 6):  prefix = "n"
+        if bytes[1] & (1 << 5):
+            prefix = "k"
+        elif bytes[1] & (1 << 4):
+            prefix = "M"
+        elif bytes[1] & (1 << 0):
+            prefix = "m"
+        elif bytes[2] & (1 << 7):
+            prefix = "u"
+        elif bytes[2] & (1 << 6):
+            prefix = "n"
         unit = ""
-        if   bytes[1] & (1 << 7):  unit = "Hz"
-        elif bytes[1] & (1 << 6):  unit = "ohm"
-        elif bytes[1] & (1 << 3):  unit = "F"
-        elif bytes[1] & (1 << 2):  unit = "A"
-        elif bytes[1] & (1 << 1):  unit = "V"
-        elif bytes[2] & (1 << 5):  unit = "dBm"
-        elif bytes[2] & (1 << 4):  unit = "s"
-        elif bytes[2] & (1 << 3):  unit = "%"
-        elif bytes[2] & (1 << 2):  unit = "hFE"
+        if bytes[1] & (1 << 7):
+            unit = "Hz"
+        elif bytes[1] & (1 << 6):
+            unit = "ohm"
+        elif bytes[1] & (1 << 3):
+            unit = "F"
+        elif bytes[1] & (1 << 2):
+            unit = "A"
+        elif bytes[1] & (1 << 1):
+            unit = "V"
+        elif bytes[2] & (1 << 5):
+            unit = "dBm"
+        elif bytes[2] & (1 << 4):
+            unit = "s"
+        elif bytes[2] & (1 << 3):
+            unit = "%"
+        elif bytes[2] & (1 << 2):
+            unit = "hFE"
         # Append "~" to V, A, or dBm if it is an AC measurement
         if unit in ("V", "A", "dBm"):
-            if bytes[7] & (1 << 2):  unit += "~"
+            if bytes[7] & (1 << 2):
+                unit += "~"
         if unit:
             return prefix + unit
         return ""
 
     def InterpretReading(self, string):
-        '''We return a tuple of strings:
-            (
-                Numerical reading with units
-                Mode
-                Modifiers
-            )
-        '''
+        """We return a tuple of strings:
+        (
+            Numerical reading with units
+            Mode
+            Modifiers
+        )
+        """
         if string == None:
             return None
         bytes = [ord(i) for i in string]
         # Byte 0:  mode
-        modes = ("DC V", "AC V", "DC uA", "DC mA", "DC A", "AC uA",
-            "AC mA", "AC A", "ohm", "CAP", "Hz", "NET Hz", "AMP Hz",
-            "Duty", "Net Duty", "Amp Duty", "Width", "Net Width", "Amp"
-            "Width", "Diode", "Cont", "hFE", "Logic", "dBm", "EF", "Temp")
+        modes = (
+            "DC V",
+            "AC V",
+            "DC uA",
+            "DC mA",
+            "DC A",
+            "AC uA",
+            "AC mA",
+            "AC A",
+            "ohm",
+            "CAP",
+            "Hz",
+            "NET Hz",
+            "AMP Hz",
+            "Duty",
+            "Net Duty",
+            "Amp Duty",
+            "Width",
+            "Net Width",
+            "AmpWidth",
+            "Diode",
+            "Cont",
+            "hFE",
+            "Logic",
+            "dBm",
+            "EF",
+            "Temp",
+        )
         mode = modes[bytes[0]]
         digits = [0, 0, 0, 0]
         n = 4
@@ -254,12 +323,14 @@ class RS22812(object):
             dp = 1
         # Get sign
         sign = ""
-        if bytes[7] & (1 << 3):  sign = "-"
+        if bytes[7] & (1 << 3):
+            sign = "-"
         # Get units
         units = self.GetUnits(bytes)
         # Construct number
-        if dp: digits.insert(dp, ".")
-        number = (''.join(digits)).strip()
+        if dp:
+            digits.insert(dp, ".")
+        number = ("".join(digits)).strip()
         # Strip leading zeros
         while number and number[0] == "0":
             number = number[1:]
@@ -267,7 +338,8 @@ class RS22812(object):
             number = "0"
         if number[0] == "." or number[0] == "F" or number[0] == "P":
             number = "0" + number
-        if number == "0.0F": number = ".0F"  # Diode open case
+        if number == "0.0F":
+            number = ".0F"  # Diode open case
         # Make the reading
         reading = sign + number + " " + units
         return reading, mode, self.GetModifiers(bytes)
@@ -283,8 +355,9 @@ class RS22812(object):
         # reading, return None.
         packet = self.get_packet()
         if 0:  # Turn on to see individual bytes
-            print((self.DumpPacket(packet)))
+            print(self.DumpPacket(packet))
         return self.InterpretReading(packet)
+
 
 if __name__ == "__main__":
     # Immediately start taking readings and printing to stdout.  There
@@ -292,37 +365,42 @@ if __name__ == "__main__":
     # flags for more information.
     from time import strftime, sleep
     from optparse import OptionParser
+
     def TimeNow():
         return strftime("%d%b%Y-%H:%M:%S")
 
-    #process command-line arguments
+    # process command-line arguments
     parser = OptionParser(
-        usage = "%prog [options]",
-        description = "rs22812 - A python interface for the " +
-                      "Radio Shack 22-812 digital multimeter."
+        usage="%prog [options]",
+        description="rs22812 - A python interface for the " + "Radio Shack 22-812 digital multimeter.",
     )
-    parser.add_option("-p", "--port",
-        dest = "port",
-        help = "port device string: examples:  " +
-               "Unix-like: /dev/ttyS0, " +
-               "Windows: COM1 [defaults to one of these values]"
+    parser.add_option(
+        "-p",
+        "--port",
+        dest="port",
+        help="port device string: examples:  "
+        + "Unix-like: /dev/ttyS0, "
+        + "Windows: COM1 [defaults to one of these values]",
     )
-    parser.add_option("-i", "--interval",
-        dest = "interval",
-        type = "int",
-        default = 1,
-        help = "interval in seconds between readings [default: %default]"
+    parser.add_option(
+        "-i",
+        "--interval",
+        dest="interval",
+        type="int",
+        default=1,
+        help="interval in seconds between readings [default: %default]",
     )
     (options, args) = parser.parse_args()
     port = options.port
     interval = options.interval
-    if (port == None):
+    if port == None:
         # attempt to supply something intelligent for os for a default
         import os
-        if os.name == 'nt':
-            port = 'COM1'
+
+        if os.name == "nt":
+            port = "COM1"
         else:
-            port = '/dev/ttyS0'
+            port = "/dev/ttyS0"
         print(("rs22812 main:  no port option specified:  port set to", port))
 
     rs = RS22812(port)

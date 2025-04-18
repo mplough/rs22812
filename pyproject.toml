@@ -1,0 +1,18 @@
+[project]
+name = "rs22812"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "pyserial"
+]
+
+[tool.ruff]
+line-length = 120
+
+[tool.uv]
+dev-dependencies = [
+    "pyupgrade",
+    "ruff==0.11.6",
+]
