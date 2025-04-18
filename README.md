@@ -1,18 +1,16 @@
-
 # rs22812
 
-*What it is*:  This is a python script that will talk over a serial
-port to a Radio Shack RS22812 digital multimeter.  
-
+This is a Python script that will talk over a serial
+port to a Radio Shack RS22812 digital multimeter.
 
 If you want to monitor a measured electrical parameter (voltage,
-current, resistance, etc.) over a period of time, this python program
+current, resistance, etc.) over a period of time, this Python program
 can talk to a Radio Shack 22-812 digital multimeter over the serial
 port and print out its readings.
 
 Besides needing the multimeter and a serial cable to connect to the
 meter, you'll need to download the `PySerial` module:
-http://pyserial.sourceforge.net.  If you don't have python, you can
+http://pyserial.sourceforge.net.  If you don't have Python, you can
 get it at http://www.python.org/.  My last few PCs didn't come with
 serial ports; if you're in the same boat, you can purchase a
 USB-to-serial adapter for $10-$15 that will do the job.
@@ -30,7 +28,7 @@ the reading shown when the REL button is pressed from subsequent
 readings.  Depending on the measurements, measurement accuracy is in
 the 0.5% to 1% range.
 
-The python code provided has an RS22812 object that you create by
+The Python code provided has an RS22812 object that you create by
 specifying the COM port that the meter is connected to (e.g., a number
 for Windows or a device for Linux).  Then you call the `GetReading()`
 method of this object.  You'll be returned a tuple of three things:
@@ -38,7 +36,8 @@ the measured value, the meter's mode, and any annunciator flags that
 are on.  Or, you can run the provided code as a stand-alone script and
 it will print the timestamped meter readings to stdout.  Here's an
 example:
-{{{
+
+```
 16Aug2009-16:42:21 [1] ('129.7 mV', 'DC V', ('Auto',))
 16Aug2009-16:42:23 [2] ('129.7 mV', 'DC V', ('Auto',))
 16Aug2009-16:42:24 [3] ('129.7 mV', 'DC V', ('Auto',))
@@ -46,7 +45,8 @@ example:
 16Aug2009-16:42:28 [5] ('0.0 mV~', 'AC V', ('Auto',))
 16Aug2009-16:42:30 [6] ('0.0 mV~', 'AC V', ('Auto',))
 16Aug2009-16:42:32 [7] ('0.0 mV~', 'AC V', ('Auto',))
-}}}
+```
+
 The meter first started reading the DC voltage of a power supply, then
 I switched the meter to measure AC voltage.  The '~' appended to the
 SI unit designates an AC measurement.
@@ -65,16 +65,16 @@ such as a 9 volt wall wart (or use a lithium battery).
 The zip file for the release also includes a [http://www.wxpython.org/
 wxPython] program that provides a simple GUI.
 
-==Updates==
+## (Old) updates
 
-**22 Jun 2014*:  I don't use this meter or software anymore, but other
+**22 Jun 2014**:  I don't use this meter or software anymore, but other
 people apparently still do, so I'll leave it on Google Code.  I
 deprecated the files in the Downloads area and moved things to the
 Mercurial repository.  If you want to get the files, install Mercurial
 on your system and use the command given under the Source link at the
 top of this page.
 
-*17 Apr 2012*:  A user named J. Muczynski mentioned in an email
+**17 Apr 2012**:  A user named J. Muczynski mentioned in an email
 that the following changes were needed for use with python 3.1:
 
   * add () for the print statements
@@ -82,14 +82,13 @@ that the following changes were needed for use with python 3.1:
     characters
   * use PySerial version 2.6 when using Python 3.1
 
-*8 Sep 2011*:  I've included a PNG file of some plotted data; the
+**8 Sep 2011**:  I've included a PNG file of some plotted data; the
 measurement was the thermocouple temperature of our GE kitchen oven.
 This oven was installed with our house, which was built in 1971.
 Interestingly, it is identical to the oven my mother had installed in
 a house my parents built in 1970; my wife has never seen another oven
 like it and wouldn't trade it for any other oven.
 
-*9 Mar 2010*:  a user named chursch submitted a file with some
+**9 Mar 2010**:  a user named chursch submitted a file with some
 changes to make it easier to use on Linux.  This is the file
 rs22812_linux.py in the zip file.
-

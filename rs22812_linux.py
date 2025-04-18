@@ -105,24 +105,37 @@ IMPLIED WARRANTY OF ANY KIND. See
 http://www.dspguru.com/wide-open-license for more information.
 """
 
+import os
+from contextlib import ContextDecorator
+from optparse import OptionParser
+from time import strftime, sleep
+
 import serial
-from time import sleep
 
 ignore_RS232_modifier = True
 
 
-class RS22812:
+def now():
+    return strftime("%d%b%Y-%H:%M:%S")
+
+
+class RS22812(ContextDecorator):
     """Provides an interface object to the Radio Shack 22-812 digital
     multimeter.  You must provide the constructor with the port number
     or device.
     """
 
-    def __init__(self, port):
+    def __init__(self, port, dump_packets=False):
         self.port = port
-        baudrate = 4800
-        self.sp = serial.Serial(port, baudrate, timeout=0)
+        self.baudrate = 4800
+        self.sp = None
+        self.dump_packets = dump_packets
 
-    def __del__(self):
+    def __enter__(self):
+        self.sp = serial.Serial(self.port, self.baudrate, timeout=0)
+        return self
+
+    def __exit__(self, *exc):
         if self.sp:
             self.sp.close()
 
@@ -154,8 +167,8 @@ class RS22812:
             # I have no idea why the article adds this number in for the
             # checksum, but it seems to work.
             constant = 57
-            checksum = (sum([ord(c) for c in packet[:-1]]) + constant) & 255
-            if checksum != ord(packet[8]):
+            checksum = (sum([c for c in packet[:-1]]) + constant) & 255
+            if checksum != packet[8]:
                 self.sp.dsrdtr = False
                 sleep(sleep_time)
                 continue
@@ -197,7 +210,7 @@ class RS22812:
         else:
             return "?"
 
-    def GetModifiers(self, bytes):
+    def get_modifiers(self, bytes):
         """Various modes show additional annunciators, such as "MAX",
         "MIN", etc.  Return those set as a tuple of strings.  We ignore
         the RS-232 annunciator unless you really want it.
@@ -224,7 +237,7 @@ class RS22812:
             s += ["Auto"]
         return tuple(s)
 
-    def GetUnits(self, bytes):
+    def get_units(self, bytes):
         """Return a string representing the units of the measurement."""
         prefix = ""
         if bytes[1] & (1 << 5):
@@ -264,7 +277,7 @@ class RS22812:
             return prefix + unit
         return ""
 
-    def InterpretReading(self, string):
+    def interpret_reading(self, packet):
         """We return a tuple of strings:
         (
             Numerical reading with units
@@ -272,9 +285,6 @@ class RS22812:
             Modifiers
         )
         """
-        if string == None:
-            return None
-        bytes = [ord(i) for i in string]
         # Byte 0:  mode
         modes = (
             "DC V",
@@ -304,29 +314,28 @@ class RS22812:
             "EF",
             "Temp",
         )
-        mode = modes[bytes[0]]
+        mode = modes[packet[0]]
         digits = [0, 0, 0, 0]
-        n = 4
         for di, by in zip((3, 4, 5, 6), (3, 2, 1, 0)):
             # Mask out the decimal point
-            byte = bytes[di] & (~8)
+            byte = packet[di] & (~8)
             digits[by] = self.interpret_digit(byte)
         # Get decimal point.  If dp = 1, 2, or 3, this locates the decimal
         # point after the first, second, or third digit, respectively.  If
         # dp = 0, there is no decimal point.
         dp = 0
-        if bytes[3] & (1 << 3):
+        if packet[3] & (1 << 3):
             dp = 3
-        elif bytes[4] & (1 << 3):
+        elif packet[4] & (1 << 3):
             dp = 2
-        elif bytes[5] & (1 << 3):
+        elif packet[5] & (1 << 3):
             dp = 1
         # Get sign
         sign = ""
-        if bytes[7] & (1 << 3):
+        if packet[7] & (1 << 3):
             sign = "-"
         # Get units
-        units = self.GetUnits(bytes)
+        units = self.get_units(packet)
         # Construct number
         if dp:
             digits.insert(dp, ".")
@@ -342,32 +351,24 @@ class RS22812:
             number = ".0F"  # Diode open case
         # Make the reading
         reading = sign + number + " " + units
-        return reading, mode, self.GetModifiers(bytes)
+        return reading, mode, self.get_modifiers(packet)
 
-    def DumpPacket(self, packet):
-        s = ""
-        for i in range(len(packet)):
-            s += "%3d " % ord(packet[i])
-        return s
+    def dump_packet(self, packet):
+        return " ".join("{p:3d}" for p in packet)
 
-    def GetReading(self):
+    def get_reading(self):
         # Return a string representing a reading.  If we could not get a
         # reading, return None.
         packet = self.get_packet()
-        if 0:  # Turn on to see individual bytes
-            print(self.DumpPacket(packet))
-        return self.InterpretReading(packet)
+        if self.dump_packets:
+            print(self.dump_packet(packet))
+        return self.interpret_reading(packet)
 
 
-if __name__ == "__main__":
+def main():
     # Immediately start taking readings and printing to stdout.  There
     # are two optional parameters on the command line.  Use the -h or --help
     # flags for more information.
-    from time import strftime, sleep
-    from optparse import OptionParser
-
-    def TimeNow():
-        return strftime("%d%b%Y-%H:%M:%S")
 
     # process command-line arguments
     parser = OptionParser(
@@ -390,24 +391,25 @@ if __name__ == "__main__":
         default=1,
         help="interval in seconds between readings [default: %default]",
     )
-    (options, args) = parser.parse_args()
+    options, args = parser.parse_args()
     port = options.port
     interval = options.interval
-    if port == None:
+    if port is None:
         # attempt to supply something intelligent for os for a default
-        import os
-
         if os.name == "nt":
             port = "COM1"
         else:
             port = "/dev/ttyS0"
-        print(("rs22812 main:  no port option specified:  port set to", port))
+        print(f"rs22812 main:  no port option specified:  port set to {port}")
 
-    rs = RS22812(port)
+    with RS22812(port) as rs:
+        count = 0
+        while True:
+            count += 1
+            r = rs.get_reading()
+            print(f"{now()}: {count} {r}")
+            sleep(interval)
 
-    count = 0
-    while True:
-        count += 1
-        r = rs.GetReading()
-        print((TimeNow() + " [%d]" % count, r))
-        sleep(interval)
+
+if __name__ == "__main__":
+    main()
